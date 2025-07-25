@@ -97,6 +97,7 @@ def api_v1_netgroups():  # put application's code here
     for netgroup, triple in netgroups.items():
         response += f"# nisNetgroup: {netgroup}\n"
         response += f"{netgroup} {" ".join(triple)}\n\n"
+    response += "\n"
     return response
 
 if __name__ == '__main__':
