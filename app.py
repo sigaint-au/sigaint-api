@@ -1,6 +1,6 @@
 import os
 import subprocess
-from flask import Flask
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
@@ -79,7 +79,7 @@ def get_sudoers_from_ldap():
         stdin=subprocess.PIPE
     )
     cvtsudoers_output = cvtsudoers.communicate(input=ldapsearch)[0]
-    return cvtsudoers_output
+    return cvtsudoers_output.decode('utf-8')
 
 def get_netgroups_from_ldap():
     ldif = _ldap_search('(objectClass=nisNetgroup)', NETGROUP_LDAP_BASE_DN)
@@ -88,7 +88,7 @@ def get_netgroups_from_ldap():
 
 @app.route('/api/v1/sudoers')
 def api_v1_sudoers():  # put application's code here
-    return get_sudoers_from_ldap()
+    return render_template('sudoers.j2', specification=get_sudoers_from_ldap())
 
 @app.route('/api/v1/netgroups')
 def api_v1_netgroups():  # put application's code here
@@ -97,8 +97,7 @@ def api_v1_netgroups():  # put application's code here
     for netgroup, triple in netgroups.items():
         response += f"# nisNetgroup: {netgroup}\n"
         response += f"{netgroup} {" ".join(triple)}\n\n"
-    response += "\n"
-    return response
+    return render_template('netgroups.j2', netgroups=response)
 
 if __name__ == '__main__':
     app.run()
